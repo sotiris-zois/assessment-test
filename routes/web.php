@@ -14,4 +14,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/',[ProductController::class, 'index']);
+Route::get('/',[ProductController::class,'listPage']);
+Route::get('products/update',[ProductController::class,'update'])->name('updateForm');

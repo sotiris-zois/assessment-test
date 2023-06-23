@@ -12,93 +12,50 @@
 
     </head>
     <body class="antialiased">
-         @if (!$success)
-                <div style="font-family: Figtree; color:red">
-                    {{ $message }}
-                </div>
-
-        @else
-            @if (!empty($new_product))
-            <div>
-                     Name: &nbsp;&nbsp;
-                <strong>
-                    {{ $new_product->name }}
-                </strong>
-                <BR>
-                    Code: &nbsp;&nbsp;
-                <strong>
-                    {{ $new_product->code }}
-                </strong>
-                <BR>
-                    Category: &nbsp;&nbsp;
-                <strong>
-                    {{ $new_product->category->title }}
-                </strong>
-                <BR>
-                    Price: &nbsp;&nbsp;
-                <strong>
-                    {{ $new_product->price }}
-                </strong>
-                <BR>
-                    Release Date: &nbsp;&nbsp;
-                <strong>
-                    {{ $new_product->release_date }}
-                </strong>
-                <BR>
-                    Tags<BR>
-                <strong>
-                    @foreach ($new_product->tags as $tag )
-                        <strong>{{ $tag->title }},</strong>
-                    @endforeach
-                </strong>
-                <BR>
-            </div>
-            @endif
-
-
-                @if(!empty($products))
-                <div style="font-family: Figtree">
-                <strong> PRODUCTS LIST </strong><BR><BR>
-                    <table border="5">
-                        <thead>
-                            <tr>
-                                <td>Name</td>
-                                <td>Code</td>
-                                <td>Category</td>
-                                <td>Price</td>
-                                <td>Release Date</td>
-                                <td>Tags</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                    @foreach ($products as $product)
-                            <tr>
-                                <td>
-                                    {{ $product->name }}
-                                </td>
-                                <td>
-                                    {{ $product->code }}
-                                </td>
-                                <td>
-                                    {{ $product->category->title }}
-                                </td>
-                                <td>
-                                    {{ $product->price }}
-                                </td>
-                                <td>
-                                    {{ $product->release_date }}
-                                </td>
-                                <td>
-                                    @foreach ($product->tags as $tag )
-                                        <strong>{{ $tag->title }},</strong>
-                                    @endforeach
-                                </td>
-                            </tr>
-                    @endforeach
-                        </tbody>
-                    </table>
-                @endif
-            </div>
-            @endif
+        <form id="filter" >
+            Category:
+            <select id="category">
+                {{ print_r(request()->session()->all()); }}
+                @foreach ($categories as $category )
+                    <option value="{{ $category->id }}">{{ $category->title }}</option>
+                @endforeach
+            </select>
+            <input type="submit" value="Filter Category" />
+        </form>
     </body>
+    <script src="{{ asset('js/jQuery.js') }}"></script>
+<script>
+    $(document).ready(function() {
+
+        $('#filter').on('submit',function(e) {
+
+            e.preventDefault();
+
+            let endpoint = "{{ route('productsList') }}";
+            $.ajax({
+                type: 'get',
+                url:endpoint,
+                contentType: 'application/json',
+                data: {
+                    category_id: $('#category').val()
+                },
+                dataType: 'JSON'
+            }).done(function(response) {
+                console.log(response);
+                if (response.success && response.data.data) {
+                    let i;
+                    for(i=0;i<response.data.data.length;i++){
+                        let row = document.createElement('tr');
+                        let nameColumn = document.createElement('td');
+                        let nameColumn = document.createElement('td');
+                        let nameColumn = document.createElement('td');
+                        let nameColumn = document.createElement('td');
+                        let nameColumn = document.createElement('td');
+                        let nameColumn = document.createElement('td');
+                    }
+                }
+            });
+        });
+    });
+</script>
 </html>

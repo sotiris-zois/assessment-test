@@ -6,17 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('tags_products_pivot', function (Blueprint $table) {
-            $table->bigInteger('tag_id');
-            $table->bigInteger('product_id');
+            $table->unsignedBigInteger('tag_id');
+            $table->unsignedBigInteger('product_id');
             $table->foreign('tag_id','tag_foreign_key')->references('id')->on('tags');
             $table->foreign('product_id','product_foreign_key')->references('id')->on('products');
-            $table->timestamps();
         });
     }
 
