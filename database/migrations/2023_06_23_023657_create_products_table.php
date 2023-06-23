@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('name',10)->index('name_index');
             $table->string('code')->unique('unique_product_ode');
-            $table->bigInteger('category_id',false,true)->index('category_index');
+            $table->bigInteger('category_id',false,true);
             $table->decimal('price',8,2,true);
             $table->date('release_date');
             $table->timestamps();
+            $table->foreign('category_id')->references('id')->on('categories');
         });
     }
 

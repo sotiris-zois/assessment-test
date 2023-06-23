@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tags_products_pivot', function (Blueprint $table) {
-            $table->id();
+            $table->bigInteger('tag_id');
+            $table->bigInteger('product_id');
+            $table->foreign('tag_id','tag_foreign_key')->references('id')->on('tags');
+            $table->foreign('product_id','product_foreign_key')->references('id')->on('products');
             $table->timestamps();
         });
     }
