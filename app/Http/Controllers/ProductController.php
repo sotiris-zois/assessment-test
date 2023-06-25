@@ -8,7 +8,9 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Throwable;
 use Illuminate\Http\Request;
 use App\Models\Category;
-use App\Models\Tag;
+use App\Events\ProductUpdated;
+use Illuminate\Support\Facades\DB;
+use WebSocket\Client as WebSocketClient;
 
 class ProductController extends Controller
 {
@@ -50,8 +52,8 @@ class ProductController extends Controller
 
             $response =  response()->json([
                 'success' => false,
-                'message' => $error->getMessage() .'<BR>'. print_r($error->getTrace(),true),
-                'data' => []
+                'message' => $error->getMessage(),
+                'data' => $error->getTrace()
             ]);
         }
         finally{
@@ -59,24 +61,24 @@ class ProductController extends Controller
         }
     }
 
-    public function update(Request $request){
+    public function update(Request $request, $id){
         try{
+            $product = Product::with(['category','tags'])->findOrFail($id);
 
-            $this->validate($request,[
-                'id' => 'required|exists:products,id'
-            ]);
+            $categories = Category::orderBy('title','asc')->get();
 
-            $product = Product::with(['category','tags'])->findOrFail($request->get('id'));
-            $categories = Category::all();
-            $tags = Tag::all();
             $response = view('updateForm')->with([
                 'product' => $product,
                 'categories' => $categories,
-                'tags' => $tags
+                'productTags' => json_encode( array_column($product->tags->toArray(),'id') )
             ]);
         }
         catch(Throwable $error){
-            dd($error);
+            $response =  response()->json([
+                'success' => false,
+                'message' => $error->getMessage(),
+                'data' => $error->getTrace()
+            ]);
         }
         finally{
             return $response;
@@ -86,24 +88,46 @@ class ProductController extends Controller
     public function store(ProductUpdateRequest $request)
     {
         try{
-            $data = $request->validated();
+            $data = $request->all();
+
+            $this->validate($request,$request->rules());
 
             $product = Product::find($data['id']);
 
             $product->update($data);
 
+            foreach($data['tags'] as $tagId){
+                DB::table('tags_products_pivot')->updateOrInsert([
+                    'tag_id'=>$tagId,
+                    'product_id' => $product->id
+                ],[
+                    'tag_id'=>$tagId,
+                    'product_id' => $product->id
+                ]);
+            }
+
+            event(new ProductUpdated($product));
+
+            $webSocket = new WebSocketClient('ws://localhost:3000');
+
+            $payload = json_encode(['type' => 'product-updated', 'data' => $product]);
+            $webSocket->send($payload);
+
+            // Close the WebSocket connection
+            $webSocket->close();
+
             $response = response()->json([
                 'success' => true,
                 'message' => 'Product updated',
-                'products' => [$product]
+                'data' => [$product]
             ]);
         }
 
         catch(Throwable $error){
-            $response = response()->json([
+            $response =  response()->json([
                 'success' => false,
-                'message' => $error->getMessage() .'<BR>'. print_r($error->getTrace(),true),
-                'products' => []
+                'message' => $error->getMessage(),
+                'data' => $error->getTrace()
             ]);
         }
         finally{

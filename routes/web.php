@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\WebSocketController;
+use Ratchet\Server\IoServer;
+use Ratchet\Http\HttpServer;
+use Ratchet\WebSocket\WsServer;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -15,4 +18,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/',[ProductController::class,'listPage']);
-Route::get('products/update',[ProductController::class,'update'])->name('updateForm');
+Route::get('products/update/{id}',[ProductController::class,'update'])->name('updateForm');
+
