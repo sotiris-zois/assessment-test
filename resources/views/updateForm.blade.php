@@ -57,7 +57,7 @@
                 let tagsContainer = $('#tags');
                 for( i =0; i<data.length; i++ ){
                     let option = document.createElement('option');
-                    if(productTags.includes(data[i].id)){
+                    if( productTags.includes(data[i].id)){
                         option.selected = true;
                     }
                     option.value = data[i].id;

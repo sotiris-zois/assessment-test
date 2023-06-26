@@ -17,6 +17,12 @@
 </head>
 
 <body class="antialiased">
+    <BR><BR>
+    <strong>Recent updates </strong><BR>
+    <BR>
+    <div id="recentChanges">
+    </div>
+    <BR><BR>
     <form id="filter">
         Category:
         <select id="category">
@@ -27,8 +33,7 @@
         </select>
         <input type="submit" value="Filter Category" />
     </form>
-    <BR><BR>
-    <table id="results" border="5">
+    <table id="results" border="5" cellpadding="10">
         <thead>
             <tr>
                 <th>Name</th>
@@ -39,60 +44,125 @@
                 <th>Tags</th>
                 <th>Actions</th>
             </tr>
+        </thead>
+        <tbody>
+        </tbody>
     </table>
-    <BR><BR>
+    <BR>
+    <div id="pagination-links" style="padding: 100px;margin: 100px;">
+
+    </div>
+    <BR>
     <div id="recent">
 
     </div>
 </body>
 <script src="{{ asset('js/jQuery.js') }}"></script>
 <script>
-    $(document).ready(function() {
+    function getProducts(pageNum = 1) {
+        let endpoint = "{{ route('productsList') }}";
+        $.ajax({
+            type: 'get',
+            url: endpoint,
+            contentType: 'application/json',
+            data: {
+                category_id: $('#category').val(),
+                page: pageNum
+            },
+            dataType: 'JSON'
+        }).done(function(response) {
 
-        const socket = new WebSocket('ws://localhost:3000');
+                if (response.success && response.data.data) {
+                    let i;
+                    let data = response.data.data;
+                    let table = $('#results > tbody');
+                    table.empty();
+                    for (i = 0; i < data.length; i++) {
 
-        socket.addEventListener('open', function(event) {
-            console.log('Connected to the WebSocket server');
+                        let row = document.createElement('tr');
+
+                        let nameCol = document.createElement('td');
+                        let codeCol = document.createElement('td');
+                        let categoryCol = document.createElement('td');
+                        let priceCol = document.createElement('td');
+                        let releaseDateCol = document.createElement('td');
+                        let tagsCol = document.createElement('td');
+                        let actionsCol = document.createElement('td');
+
+                        nameCol.textContent = data[i].name;
+                        codeCol.textContent = data[i].code;
+                        categoryCol.textContent = data[i].category.title;
+                        priceCol.textContent = data[i].price;
+                        releaseDateCol.textContent = data[i].release_date;
+                        actionsCol.innerHTML = '<a target="_blank" href="products/update/' + data[i].id +
+                            '">Edit</a>';
+                        data[i].tags.forEach(function(tag) {
+                            tagsCol.textContent += tag.title + ', ';
+                        });
+                        row.append(nameCol, codeCol, categoryCol, priceCol, releaseDateCol,
+                            tagsCol, actionsCol);
+                        table.append(row);
+                    }
+                    let links = $('#pagination-links');
+                    links.empty();
+                    let prev = document.createElement('a');
+                    prev.href = "#";
+                    prev.textContent = '<= Prev';
+                    prev.innerHTML += "&nbsp;&nbsp;&nbsp;";
+                    prev.onclick = function(){
+                        getProducts(parseInt(response.data.current_page-1));
+                    }
+                    let next = document.createElement('a');
+                    next.href = "#";
+                    next.textContent = 'Next =>';
+                    next.onclick = function(){
+                        getProducts(parseInt(response.data.current_page+1));
+                    }
+                    links.append(prev,next);
+                }
         });
-
-        socket.addEventListener('message', function(event) {
-            const message = event.data;
-            console.log('Received message:', message);
-        });
-
-        socket.addEventListener('close', function(event) {
-            console.log('Connection closed');
-        });
-
-        socket.addEventListener('product-updated', function(event) {
-            console.log('Connection closed');
-        });
+    }
+        $(document).ready(function() {
 
 
-        $('#filter').on('submit', function(e) {
+            const socket = new WebSocket('ws://localhost:3000');
 
-            e.preventDefault();
-
-            let endpoint = "{{ route('productsList') }}";
-            $.ajax({
-                type: 'get',
-                url: endpoint,
-                contentType: 'application/json',
-                data: {
-                    category_id: $('#category').val()
-                },
-                dataType: 'JSON'
-            }).done(function(response) {
-                console.log(response);
-                // if (response.success && response.data.data) {
-                //     let i;
-                //     for(i=0;i<response.data.data.length;i++){
-                //         let row = document.createElement('tr');
-                //     }
-                // }
+            socket.addEventListener('open', function(event) {
+                console.log('Connected to the WebSocket server');
             });
+
+            socket.addEventListener('message', function(event) {
+
+                let recentChanges = $('#recentChanges');
+                let data = JSON.parse(event.data);
+                data = data.data;
+                let paragraph = document.createElement('p');
+
+                paragraph.innerHTML = 'Name: ' + data.name + '<BR>';
+                paragraph.innerHTML += 'Code: ' + data.code + '<BR>';
+                paragraph.innerHTML += 'Category: ' + data.category.title + '<BR>';
+                paragraph.innerHTML += 'Price: ' + data.price + '<BR>';
+                paragraph.innerHTML += 'Release Date: ' + data.release_date + '<BR>';
+                paragraph.innerHTML += 'Tags: ';
+
+                data.tags.forEach(element => {
+                    paragraph.innerHTML += element.title + ',';
+                });
+                recentChanges.prepend(paragraph);
+            });
+
+            socket.addEventListener('close', function(event) {
+                console.log('Connection closed');
+            });
+
+            $('#filter').on('submit', function(e) {
+
+                e.preventDefault();
+
+                getProducts();
+            });
+
         });
-    });
 </script>
 
 </html>

@@ -17,9 +17,5 @@ class BroadcastServiceProvider extends ServiceProvider
 
         require base_path('routes/channels.php');
 
-        Event::listen(function (ProductUpdated $event) {
-            return sprintf('Broadcasted data: %s', json_encode($event->broadcastWith()));
-        });
-
     }
 }

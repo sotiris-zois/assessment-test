@@ -12,11 +12,3 @@ use Illuminate\Support\Facades\Broadcast;
 | used to check if an authenticated user can listen to the channel.
 |
 */
-
-Broadcast::channel('product-updates', function () {
-    return true;
-});
-
-Broadcast::channel('product-updates', function ($user, array $product) {
-    return true;
-});

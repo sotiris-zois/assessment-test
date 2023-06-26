@@ -29,6 +29,7 @@ class ProductUpdateRequest extends FormRequest
             'release_date' => 'required|date',
             'category_id' => 'required|exists:categories,id',
             'tags' => 'required|array',
+            'tags.*' =>'required|exists:tags,id'
         ];
     }
 

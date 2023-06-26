@@ -19,4 +19,5 @@ use Ratchet\WebSocket\WsServer;
 
 Route::get('/',[ProductController::class,'listPage']);
 Route::get('products/update/{id}',[ProductController::class,'update'])->name('updateForm');
+Route::get('products/create',[ProductController::class,'addProduct'])->name('addForm');
 
