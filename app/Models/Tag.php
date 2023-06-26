@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Tag extends Model
 {
     public function products(){
-        return $this->hasManyThrough(Product::class,'tags_products_pivot','id','id','product_id','tag_id');
+        return $this->belongsToMany(Product::class,'tags_products_pivot','id','id','product_id','tag_id');
     }
 }

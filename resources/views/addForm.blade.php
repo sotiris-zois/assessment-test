@@ -1,46 +1,39 @@
 <html>
 
 <head>
-    <title> Update Product - {{ $product->code }} </title>
+    <title> Add Product  </title>
 </head>
 
 <body>
-    <form id="updateForm">
+    <form id="addForm">
         Name:
-        <input type="text" id="name" value="{{ $product->name }}" />
+        <input type="text" id="name"   />
         <BR>
         Code:
-        <input type="text" id="code" value="{{ $product->code }}" />
+        <input type="text" id="code"   />
         <BR>
         Category:
         <select id="category_id">
             @foreach ($categories as $category)
-            @if($category->id == $product->category_id)
-                <option value="{{ $category->id }}" selected>{{ $category->title }} </option>
-            @else
-            <option value="{{ $category->id }}">{{ $category->title }} </option>
-            @endif
+                <option value="{{ $category->id }}">{{ $category->title }} </option>
             @endforeach
         </select>
         <BR>
-        Price: <input type="text" id="price" value="{{ $product->price }}">
+        Price: <input type="text" id="price"  >
         <BR>
-        Release Date : <input type="text" id="release_date" value="{{ $product->release_date }}">
+        Release Date : <input type="text" id="release_date"  >
         <BR>
         Tags
         <BR>
         <select multiple=true id="tags">
 
         </select>
-        <input id="productTags" type="hidden" value="{{ $productTags }}">
-        <input type="submit" value="Update">
+        <input type="submit" value="Add product">
     </form>
 </body>
 <script src="{{ asset('js/jQuery.js') }}"></script>
 <script>
     $(document).ready(function() {
-
-        let productTags = JSON.parse($("#productTags").val());
 
         let endpoint = "{{ route('getTags') }}";
 
@@ -57,9 +50,6 @@
                 let tagsContainer = $('#tags');
                 for( i =0; i<data.length; i++ ){
                     let option = document.createElement('option');
-                    if( productTags.includes(data[i].id)){
-                        option.selected = true;
-                    }
                     option.value = data[i].id;
                     option.textContent = data[i].title;
                     tagsContainer.append(option);
@@ -67,20 +57,18 @@
             }
         });
 
-        $('#updateForm').on('submit',function(e) {
+        $('#addForm').on('submit',function(e) {
 
             e.preventDefault();
-            let endpoint = "{{ route('productUpdate') }}";
+            let endpoint = "{{ route('createProduct') }}";
 
             let request = {
-                id: {{ $product->id }},
                 tags: $('#tags').val(),
                 category_id: $('#category_id').val(),
                 name: $('#name').val(),
                 code: $('#code').val(),
                 release_date: $('#release_date').val(),
                 price: $("#price").val()
-
             };
 
             $.ajax({
